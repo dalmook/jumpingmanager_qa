@@ -321,6 +321,13 @@ const regPhone = $('#regPhone');
 const regTeam  = $('#regTeam');
 const btnRegister = $('#btnRegister');
 
+const btnReloadLogs = document.getElementById('btnReloadLogs');
+const btnMoreLogs   = document.getElementById('btnMoreLogs');
+
+btnReloadLogs?.addEventListener('click', () => loadLogs(true));
+btnMoreLogs  ?.addEventListener('click', () => loadLogs(false));
+
+
 // 손님 마이페이지 (요약 카드)
 const memberSelf = $('#memberSelf');
 const selfCard   = $('#selfCard');
@@ -1097,6 +1104,9 @@ function formatLogLine(v) {
 
 // “더 보기” 버튼 유틸
 function addOrUpdateLoadMoreButton() {
+  // 수동 버튼이 이미 있는 경우(권장) → 동적 버튼 생성 생략
+  if (document.getElementById('btnMoreLogs')) return;
+
   let btn = document.getElementById('__logsMore');
   if (!btn) {
     btn = document.createElement('button');
@@ -1105,10 +1115,10 @@ function addOrUpdateLoadMoreButton() {
     btn.className = 'btn-more';
     btn.textContent = '더 보기';
     btn.addEventListener('click', () => loadLogs(false));
-    // 버튼을 logList 아래에 삽입
     logList.parentElement?.appendChild(btn);
   }
 }
+
 function removeLoadMoreButton() {
   const btn = document.getElementById('__logsMore');
   if (btn) btn.remove();
