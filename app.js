@@ -21,6 +21,13 @@ const $ = (s)=>document.querySelector(s);
 const byId = (id)=>document.getElementById(id);
 const toast = (m)=> alert(m);
 const ts = ()=> firebase.firestore.FieldValue.serverTimestamp();
+// 최초 회원가입 직후 1회 새로고침 플래그 해제 (루프 방지)
+if (sessionStorage.getItem('__just_signed_up')) {
+  sessionStorage.removeItem('__just_signed_up');
+  // 필요하면 안내 토스트:
+  // toast('환영합니다! 초기 설정을 불러왔어요.');
+}
+
 
 // 도메인(점 포함 필수)
 const PHONE_DOMAIN = 'phone.local';
@@ -689,12 +696,16 @@ signupForm?.addEventListener('submit', async (e) => {
     });
 
     signupModal?.classList.add('hidden');
-    toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
+    toast('회원가입 완료! 초기 정보를 불러오는 중입니다…');
+    
+    // ✅ 1회 새로고침 플래그 설정 후 리로드
+    sessionStorage.setItem('__just_signed_up', '1');
+    setTimeout(() => {
+      location.reload(); // 같은 페이지로 1회 새로고침
+    }, 500);
+    
+    // (아래 로그인 입력창 초기화는 새로고침되면 의미 없어 생략해도 됨)
 
-    const loginEmailEl = document.getElementById("loginEmail");
-    if (loginEmailEl) loginEmailEl.value = '';
-    const loginPassEl  = document.getElementById("loginPass");
-    if (loginPassEl)  loginPassEl.value  = '';
 
   } catch(e) {
     console.error('signup submit error', e);
