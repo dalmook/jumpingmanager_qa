@@ -280,6 +280,20 @@ const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
 const mascot = document.querySelector('.mascot-badge');
 
+// 회원가입 모달 DOM
+const signupModal = document.getElementById('signupModal');
+const signupForm  = document.getElementById('signupForm');
+const suName  = document.getElementById('suName');
+const suPhone = document.getElementById('suPhone');
+const suPass  = document.getElementById('suPass');
+const suEmail = document.getElementById('suEmail');
+const suTeam  = document.getElementById('suTeam');
+const suCar   = document.getElementById('suCar');
+const suAgree = document.getElementById('suAgree');
+const suSubmit= document.getElementById('suSubmit');
+const suCancel= document.getElementById('suCancel');
+
+
 // [추가] QR 스캔 UI 참조
 const btnQRScan = document.getElementById('btnQRScan');
 const qrModal   = document.getElementById('qrModal');
@@ -586,47 +600,81 @@ btnLogin?.addEventListener("click", async () => {
   }
 });
 
-// 7) 회원가입: 휴대폰번호 + 비밀번호
-btnSignup?.addEventListener("click", async () => {
-  const phoneRaw = byId("loginEmail")?.value?.trim();
-  const pass = byId("loginPass")?.value?.trim();
-  const phone = canonPhone(phoneRaw || "");
+// 7) 회원가입 버튼: 모달 열기
+btnSignup?.addEventListener('click', () => {
+  // 필드 초기화
+  if (suName)  suName.value  = '';
+  if (suPhone) suPhone.value = byId("loginEmail")?.value?.replace(/\D/g,'') || '';
+  if (suPass)  suPass.value  = byId("loginPass")?.value || '';
+  if (suEmail) suEmail.value = '';
+  if (suTeam)  suTeam.value  = '';
+  if (suCar)   suCar.value   = '';
+  if (suAgree) suAgree.checked = false;
 
-  if (!isPhoneInput(phone)) return toast("회원가입: 휴대폰번호(숫자만)를 정확히 입력하세요.");
-  if (!pass) return toast("회원가입: 비밀번호를 입력하세요.");
+  signupModal?.classList.remove('hidden');
+});
 
-  const email = toEmailFromPhone(phone); // 예: 01012345678@phone.local
-  const now = ts();
+// 모달 닫기
+suCancel?.addEventListener('click', () => {
+  signupModal?.classList.add('hidden');
+});
+// 회원가입 제출
+signupForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  try {
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-    console.log("signup uid", cred.user?.uid);
+  const name  = suName?.value?.trim()  || '';
+  const phone = canonPhone(suPhone?.value?.trim() || '');
+  const pass  = suPass?.value?.trim()  || '';
+  const email = suEmail?.value?.trim() || '';
+  const team  = suTeam?.value?.trim()  || '';
+  const car   = suCar?.value?.trim()   || '';
+  const agree = !!suAgree?.checked;
 
-    // Firestore 문서: members/{phone}
-    const ref = db.collection("members").doc(phone);
+  // 검증
+  if (!name)  return toast('이름을 입력하세요.');
+  if (!isPhoneInput(phone)) return toast('핸드폰번호(숫자만)를 정확히 입력하세요.');
+  if (!pass)  return toast('비밀번호를 입력하세요.');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('올바른 이메일을 입력하세요.');
+  if (!team)  return toast('팀명을 입력하세요.');
+  if (!agree) return toast('개인정보 활용에 동의해 주세요.');
+
+  try{
+    // 로그인 유지 정책: 손님은 "휴대폰으로 로그인"
+    // → Auth 계정은 phone@phone.local 로 만들고, 사용자가 입력한 실제 email은 Firestore에 별도 저장
+    const authEmail = toEmailFromPhone(phone);
+
+    const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
+    console.log('signup uid', cred.user?.uid);
+
+    // Firestore members/{phone} 문서 생성/병합
+    const ref = db.collection('members').doc(phone);
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
-      if (!snap.exists) {
-        tx.set(ref, {
-          name: "",
-          phone,
-          team: "",
-          stamp: 0,
-          freeCredits: 0,
-          freeWeekday: 0,   // 추가
-          freeSlush: 0,     // 추가
-          passes: {},
-          totalVisits: 0,
-          createdAt: now,
-          updatedAt: now,
-        });
-      }
+      const base = snap.exists ? (snap.data() || {}) : {
+        name:'', phone, team:'', stamp:0,
+        freeCredits:0, freeWeekday:0, freeSlush:0,
+        passes:{}, totalVisits:0, createdAt: ts()
+      };
+      tx.set(ref, {
+        ...base,
+        name, phone,
+        team,
+        car: car || base.car || '',
+        email,                 // 사용자가 입력한 실제 이메일 저장
+        updatedAt: ts()
+      }, { merge: true });
     });
 
-    toast("회원가입 완료");
-  } catch (e) {
-    console.error("signup error", e);
-    toast("회원가입 실패: " + (e?.message || e));
+    signupModal?.classList.add('hidden');
+    toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
+
+    // (선택) 로그인 폼 비우기
+    byId("loginEmail") && (byId("loginEmail").value = '');
+    byId("loginPass") && (byId("loginPass").value  = '');
+
+  }catch(e){
+    console.error('signup modal error', e);
+    toast('회원가입 실패: ' + (e?.message || e));
   }
 });
 
