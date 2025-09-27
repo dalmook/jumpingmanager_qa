@@ -957,30 +957,163 @@ function renderMember(d){
   renderStageInputs(d.stages || {});
 }
 
-async function addLog(type, extra={}){
-  if(!currentMemberRef || !logList) return;
-  try{
+// 로그: 타입 + 확장 메타(처리자/대상/세부) 저장
+async function addLog(type, extra = {}) {
+  if (!currentMemberRef) return;
+  try {
     await currentMemberRef.collection('logs').add({
-      type, ...extra, at: ts(), by: auth.currentUser?.uid||null
+      type,
+      ...extra,                         // 예: { n: 3, name: '무료권', where:'batch', key:'...' }
+      memberId: currentMemberRef.id,    // 대상 회원(휴대폰)
+      by: auth.currentUser?.uid || null,
+      byEmail: auth.currentUser?.email || null,
+      at: ts(),
     });
-    await loadLogs();
-  }catch(e){ console.error('addLog', e); }
+    // 목록 즉시 갱신(첫 페이지를 다시 불러오기)
+    await loadLogs(true);
+  } catch (e) {
+    console.error('addLog', e);
+  }
 }
-async function loadLogs(){
-  if(!currentMemberRef || !logList) return;
-  const qs = await currentMemberRef.collection('logs').orderBy('at','desc').limit(20).get();
-  const frag = document.createDocumentFragment();
-  qs.docs.forEach(d=>{
-    const v=d.data()||{};
-    const div=document.createElement('div');
-    div.className='item';
-    const when = v.at?.toDate?.()?.toLocaleString?.() || '';
-    div.textContent = `${(v.type||'').toUpperCase()} · ${when}`;
-    frag.appendChild(div);
-  });
-  logList.innerHTML='';
-  logList.appendChild(frag);
+
+// ✅ 전역 커서(파일 상단 적당한 위치에 선언)
+let __logsCursor = null;
+
+// ✅ 교체: 상세 포맷 & 페이지네이션 지원
+async function loadLogs(reset = false) {
+  if (!currentMemberRef || !logList) return;
+
+  if (reset) {
+    logList.innerHTML = '';
+    __logsCursor = null;
+  }
+  // 첫 호출 시 로딩 표시
+  if (!__logsCursor && !logList.children.length) {
+    logList.innerHTML = '<div class="muted">로그 불러오는 중…</div>';
+  }
+
+  try {
+    let q = currentMemberRef.collection('logs').orderBy('at', 'desc').limit(30);
+    if (__logsCursor) q = q.startAfter(__logsCursor);
+
+    const qs = await q.get();
+    if (qs.empty) {
+      // 더보기 버튼 제거
+      removeLoadMoreButton();
+      if (!logList.children.length) {
+        logList.innerHTML = '<div class="muted">로그가 없습니다</div>';
+      }
+      return;
+    }
+
+    // 첫 로딩 문구 제거
+    if (logList.children.length === 1 && logList.firstChild?.classList?.contains('muted')) {
+      logList.innerHTML = '';
+    }
+
+    const frag = document.createDocumentFragment();
+
+    qs.docs.forEach((doc) => {
+      const v = doc.data() || {};
+      const when = v.at?.toDate?.()?.toLocaleString?.() || '-';
+      const who  = v.byEmail || '(알수없음)';
+      const row  = document.createElement('div');
+      row.className = 'log-item';
+
+      // 타입별 라벨/아이콘 & 상세 메시지
+      const { icon, title, detail } = formatLogLine(v);
+
+      row.innerHTML = `
+        <div class="log-left">
+          <span class="log-icon">${icon}</span>
+          <div class="log-main">
+            <div class="log-title">${title}</div>
+            ${detail ? `<div class="log-detail muted">${detail}</div>` : ''}
+          </div>
+        </div>
+        <div class="log-right">
+          <div class="log-when">${when}</div>
+          <div class="log-who muted">${who}</div>
+        </div>
+      `;
+      frag.appendChild(row);
+    });
+
+    logList.appendChild(frag);
+
+    // 커서 갱신
+    __logsCursor = qs.docs[qs.docs.length - 1];
+
+    // “더 보기” 버튼 보이기/갱신
+    addOrUpdateLoadMoreButton();
+
+  } catch (e) {
+    console.error('loadLogs', e);
+    if (!logList.children.length) {
+      logList.innerHTML = '로그 로드 실패: ' + e.message;
+    }
+  }
 }
+
+// 타입별 라벨/아이콘/디테일 구성
+function formatLogLine(v) {
+  const t = (v.type || '').toLowerCase();
+  // 공통적으로 참조할 수 있는 필드
+  const n = v.n;
+  const where = v.where;     // 'batch' | 'legacy'
+  const key = v.key;         // 배치ID 또는 레거시 키
+  const name = v.name;       // 권종 이름(무료권/평일무료권/10회권 등)
+  const expire = v.expire;   // 'YYYY-MM-DD' 문자열(있을수도/없을수도)
+
+  switch (t) {
+    case 'visit':
+      return { icon: '🧾', title: '방문 1회 기록', detail: null };
+    case 'stamp_add_n':
+      return { icon: '⭐', title: `스탬프 +${n}`, detail: v.via ? `방식: ${v.via}` : '' };
+    case 'stamp_sub_n':
+      return { icon: '⭐', title: `스탬프 -${n}`, detail: null };
+    case 'stamp_reset':
+      return { icon: '♻️', title: '스탬프 초기화(0)', detail: null };
+    case 'pass_add_batch':
+      return { icon: '🎫', title: `다회권 추가: ${name} +${v.cnt}`, detail: expire ? `만료: ${expire}` : '' };
+    case 'pass_use_n':
+      return { icon: '➖', title: `다회권 사용 -${n}`, detail: where === 'batch' ? `배치: ${key}` : `레거시: ${key}` };
+    case 'pass_add_n':
+      return { icon: '➕', title: `다회권 환원 +${n}`, detail: where === 'batch' ? `배치: ${key}` : `레거시: ${key}` };
+    case 'pass_delete':
+      return { icon: '🗑️', title: '다회권 삭제', detail: where === 'batch' ? `배치: ${key}` : `레거시: ${key}` };
+    case 'stages_save':
+      return { icon: '🎯', title: '스테이지 저장', detail: '진행 현황 업데이트' };
+    case 'free_slush_add_n':
+      return { icon: '🧊', title: `슬러시 무료권 +${n}`, detail: null };
+    case 'free_slush_sub_n':
+      return { icon: '🧊', title: `슬러시 무료권 -${n}`, detail: null };
+    case 'profile_save':
+      return { icon: '👤', title: '프로필 저장', detail: `이름/팀/이메일/차량/비고 업데이트` };
+    default:
+      return { icon: '📌', title: t || '알 수 없는 이벤트', detail: JSON.stringify(v) };
+  }
+}
+
+// “더 보기” 버튼 유틸
+function addOrUpdateLoadMoreButton() {
+  let btn = document.getElementById('__logsMore');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.id = '__logsMore';
+    btn.type = 'button';
+    btn.className = 'btn-more';
+    btn.textContent = '더 보기';
+    btn.addEventListener('click', () => loadLogs(false));
+    // 버튼을 logList 아래에 삽입
+    logList.parentElement?.appendChild(btn);
+  }
+}
+function removeLoadMoreButton() {
+  const btn = document.getElementById('__logsMore');
+  if (btn) btn.remove();
+}
+
 // [추가] QR 스캐너 열기
 async function openQRScanner(){
   if(!isAdmin) return toast('운영자 전용');
