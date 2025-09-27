@@ -628,16 +628,17 @@ signupForm?.addEventListener('submit', async (e) => {
   const name  = suName?.value?.trim()  || '';
   const phone = canonPhone(suPhone?.value?.trim() || '');
   const pass  = suPass?.value?.trim()  || '';
-  const email = suEmail?.value?.trim() || '';
-  const team  = suTeam?.value?.trim()  || '';
-  const car   = suCar?.value?.trim()   || '';
+  const email = (suEmail?.value || '').trim();   // 선택
+  const team  = (suTeam?.value  || '').trim();   // 선택
+  const car   = (suCar?.value   || '').trim();
   const agree = !!suAgree?.checked;
 
+  // ✅ 필수만 검사: 이름/전화/비번/동의
   if (!name)  return toast('이름을 입력하세요.');
   if (!isPhoneInput(phone)) return toast('핸드폰번호(숫자만)를 정확히 입력하세요.');
   if (!pass)  return toast('비밀번호를 입력하세요.');
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('올바른 이메일을 입력하세요.');
-  if (!team)  return toast('팀명을 입력하세요.');
+  // 이메일은 입력된 경우에만 형식 검사
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return toast('올바른 이메일을 입력하세요.');
   if (!agree) return toast('개인정보 활용에 동의해 주세요.');
 
   try {
@@ -653,31 +654,36 @@ signupForm?.addEventListener('submit', async (e) => {
         freeCredits:0, freeWeekday:0, freeSlush:0,
         passes:{}, passBatches:{}, totalVisits:0, createdAt: ts()
       };
-      tx.set(ref, {
+
+      // ✅ 빈 값으로 기존 데이터를 덮어쓰지 않도록 payload를 조건부 구성
+      const payload = {
         ...base,
-        name, phone, team,
-        car: car || base.car || '',
-        email,                    // 실제 이메일 저장
+        name,
+        phone,
         updatedAt: ts(),
         uid: cred.user?.uid || null
-      }, { merge: true });
+      };
+      if (team)  payload.team  = team;
+      if (email) payload.email = email;
+      if (car)   payload.car   = car;
+
+      tx.set(ref, payload, { merge: true });
     });
 
-signupModal?.classList.add('hidden');
-toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
+    signupModal?.classList.add('hidden');
+    toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
 
-const loginEmailEl = document.getElementById("loginEmail");
-if (loginEmailEl) loginEmailEl.value = '';
-
-const loginPassEl = document.getElementById("loginPass");
-if (loginPassEl) loginPassEl.value = '';
-
+    const loginEmailEl = document.getElementById("loginEmail");
+    if (loginEmailEl) loginEmailEl.value = '';
+    const loginPassEl  = document.getElementById("loginPass");
+    if (loginPassEl)  loginPassEl.value  = '';
 
   } catch(e) {
     console.error('signup submit error', e);
     toast('회원가입 실패: ' + (e?.message || e));
   }
 });
+
 
 // 8) 로그아웃
 btnLogout?.addEventListener('click', async()=>{
