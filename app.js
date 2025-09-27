@@ -601,18 +601,48 @@ btnLogin?.addEventListener("click", async () => {
 });
 
 // 7) 회원가입 버튼: 모달 열기
-btnSignup?.addEventListener('click', () => {
-  // 필드 초기화
-  if (suName)  suName.value  = '';
-  if (suPhone) suPhone.value = byId("loginEmail")?.value?.replace(/\D/g,'') || '';
-  if (suPass)  suPass.value  = byId("loginPass")?.value || '';
-  if (suEmail) suEmail.value = '';
-  if (suTeam)  suTeam.value  = '';
-  if (suCar)   suCar.value   = '';
-  if (suAgree) suAgree.checked = false;
+// 8) 회원가입 실행
+btnDoSignup?.addEventListener('click', async () => {
+  // ✅ 개인정보 동의 체크 확인
+  if (!suAgree?.checked) {
+    alert('개인정보 수집·이용에 동의해야 가입할 수 있습니다.');
+    return;
+  }
 
-  signupModal?.classList.remove('hidden');
+  const name  = suName?.value.trim();
+  const phone = canonPhone(suPhone?.value);
+  const pass  = suPass?.value;
+  const email = suEmail?.value.trim();
+  const team  = suTeam?.value.trim();
+  const car   = suCar?.value.trim();
+
+  if (!name || !phone || !pass || !email || !team) {
+    alert('필수 입력값을 모두 채워주세요.');
+    return;
+  }
+
+  try {
+    // Firebase Auth 생성
+    const cred = await auth.createUserWithEmailAndPassword(email, pass);
+
+    // Firestore 저장
+    await db.collection('members').doc(phone).set({
+      name, phone, team, car,
+      stamp: 0, freeCredits: 0, freeWeekday: 0, freeSlush: 0,
+      passes: {}, passBatches: {},
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      uid: cred.user.uid
+    });
+
+    alert('회원가입이 완료되었습니다.');
+    signupModal?.classList.add('hidden');
+
+  } catch (e) {
+    console.error('회원가입 오류', e);
+    alert('회원가입 실패: ' + (e.message || e));
+  }
 });
+
 
 // 모달 닫기
 suCancel?.addEventListener('click', () => {
