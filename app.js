@@ -608,11 +608,6 @@ btnDoSignup?.addEventListener('click', (e) => {
   signupForm?.requestSubmit();   // ← 실제 로직은 submit 핸들러에서만 처리
 });
 
-
-// 모달 닫기
-suCancel?.addEventListener('click', () => {
-  signupModal?.classList.add('hidden');
-});
 // 회원가입 제출
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
