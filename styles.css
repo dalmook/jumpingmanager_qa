@@ -435,3 +435,8 @@ input, select{ min-height:42px; }
 
 /* Seg-header */
 .seg-head{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+/* Sign-up modal fine-tune (선택) */
+#signupForm input { width:100%; }
+@media (max-width:680px){
+  #signupForm { grid-template-columns: 1fr !important; }
+}
