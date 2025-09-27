@@ -862,17 +862,29 @@ function renderSelfStages(d = {}) {
 
 
 // 10) 회원 상세/렌더/로그
-function hideMemberPanel(){ memberSection?.classList.add('hidden'); currentMemberRef=null; }
+function hideMemberPanel(){
+  memberSection?.classList.add('hidden');
+  currentMemberRef = null;
+  if (logList) logList.innerHTML = '';        // ✅ 로그 비우기
+  if (typeof __logsCursor !== 'undefined') __logsCursor = null; // (선택) 커서 리셋
+}
+
 
 async function openMember(id){
   const ref = db.collection('members').doc(id);
   const snap = await ref.get();
   if(!snap.exists){ toast('회원 없음'); return; }
+
   currentMemberRef = ref;
   renderMember(snap.data());
   memberSection?.classList.remove('hidden');
-  await loadLogs();
+
+  // ✅ 로그 목록/커서 초기화 후 새로 로드
+  if (logList) logList.innerHTML = '<div class="muted">로그 불러오는 중…</div>';
+  if (typeof __logsCursor !== 'undefined') __logsCursor = null; // (페이지네이션 쓰는 경우)
+  await loadLogs(true); // ← reset=true로 첫 페이지부터 다시
 }
+
 
 function renderMember(d){
   // 0) 방어 & 이전 선택값 백업
