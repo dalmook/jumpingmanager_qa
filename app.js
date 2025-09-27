@@ -280,9 +280,11 @@ const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
 const mascot = document.querySelector('.mascot-badge');
 
-// 회원가입 모달 DOM
+// 모달/폼/필드 참조
 const signupModal = document.getElementById('signupModal');
 const signupForm  = document.getElementById('signupForm');
+const btnCancelSignup = document.getElementById('btnCancelSignup');
+
 const suName  = document.getElementById('suName');
 const suPhone = document.getElementById('suPhone');
 const suPass  = document.getElementById('suPass');
@@ -290,8 +292,6 @@ const suEmail = document.getElementById('suEmail');
 const suTeam  = document.getElementById('suTeam');
 const suCar   = document.getElementById('suCar');
 const suAgree = document.getElementById('suAgree');
-const suSubmit= document.getElementById('suSubmit');
-const suCancel= document.getElementById('suCancel');
 
 
 // [추가] QR 스캔 UI 참조
@@ -601,14 +601,12 @@ btnLogin?.addEventListener("click", async () => {
 });
 
 // 7) 회원가입 버튼: 모달 열기
-// 8) 회원가입 실행
-// 8) 회원가입 실행 (버튼 → 폼 제출만)
-btnDoSignup?.addEventListener('click', (e) => {
-  e.preventDefault();
-  signupForm?.requestSubmit();   // ← 실제 로직은 submit 핸들러에서만 처리
+// 취소 버튼: 모달 닫기
+btnCancelSignup?.addEventListener('click', () => {
+  signupModal?.classList.add('hidden');
 });
 
-// 회원가입 제출
+// 제출 핸들러 하나만
 signupForm?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -620,7 +618,6 @@ signupForm?.addEventListener('submit', async (e) => {
   const car   = suCar?.value?.trim()   || '';
   const agree = !!suAgree?.checked;
 
-  // 검증
   if (!name)  return toast('이름을 입력하세요.');
   if (!isPhoneInput(phone)) return toast('핸드폰번호(숫자만)를 정확히 입력하세요.');
   if (!pass)  return toast('비밀번호를 입력하세요.');
@@ -629,45 +626,38 @@ signupForm?.addEventListener('submit', async (e) => {
   if (!agree) return toast('개인정보 활용에 동의해 주세요.');
 
   try{
-    // 로그인 유지 정책: 손님은 "휴대폰으로 로그인"
-    // → Auth 계정은 phone@phone.local 로 만들고, 사용자가 입력한 실제 email은 Firestore에 별도 저장
+    // 손님 로그인 정책 유지: phone@phone.local 를 Auth 계정으로 사용
     const authEmail = toEmailFromPhone(phone);
-
     const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
-    console.log('signup uid', cred.user?.uid);
 
-    // Firestore members/{phone} 문서 생성/병합
     const ref = db.collection('members').doc(phone);
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(ref);
       const base = snap.exists ? (snap.data() || {}) : {
         name:'', phone, team:'', stamp:0,
         freeCredits:0, freeWeekday:0, freeSlush:0,
-        passes:{}, totalVisits:0, createdAt: ts()
+        passes:{}, passBatches:{}, totalVisits:0, createdAt: ts()
       };
       tx.set(ref, {
         ...base,
-        name, phone,
-        team,
+        name, phone, team,
         car: car || base.car || '',
-        email,                 // 사용자가 입력한 실제 이메일 저장
-        updatedAt: ts()
+        email,                    // 실제 이메일 저장
+        updatedAt: ts(),
+        uid: cred.user?.uid || null
       }, { merge: true });
     });
 
     signupModal?.classList.add('hidden');
     toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
-
-    // (선택) 로그인 폼 비우기
-    byId("loginEmail") && (byId("loginEmail").value = '');
-    byId("loginPass") && (byId("loginPass").value  = '');
+    document.getElementById("loginEmail")?.value = '';
+    document.getElementById("loginPass")?.value  = '';
 
   }catch(e){
-    console.error('signup modal error', e);
+    console.error('signup submit error', e);
     toast('회원가입 실패: ' + (e?.message || e));
   }
 });
-
 // 8) 로그아웃
 btnLogout?.addEventListener('click', async()=>{
   try{
