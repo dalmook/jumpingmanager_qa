@@ -648,10 +648,11 @@ signupForm?.addEventListener('submit', async (e) => {
       }, { merge: true });
     });
 
-    signupModal?.classList.add('hidden');
-    toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
-    document.getElementById("loginEmail")?.value = '';
-    document.getElementById("loginPass")?.value  = '';
+signupModal?.classList.add('hidden');
+toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
+document.getElementById("loginEmail")?.value = '';
+document.getElementById("loginPass")?.value  = '';
+
 
   }catch(e){
     console.error('signup submit error', e);
