@@ -320,7 +320,9 @@ const selfCard   = $('#selfCard');
 
 // 상세/조작 패널 (관리자)
 const memberSection = $('#memberSection');
-const mPhoneTeam = $('#mPhoneTeam');
+const mTeam  = $('#mTeam');
+const mEmail = $('#mEmail');
+const mPhone = $('#mPhone');
 
 // === 스테이지 정의/DOM ===
 const STAGE_TOTALS = {
@@ -346,6 +348,7 @@ const stampDots  = $('#stampDots');
 
 const editName = $('#editName');
 const editTeam = $('#editTeam');
+const editEmail = $('#editEmail');
 const editCar  = $('#editCar');     // 차량번호
 const editNote = $('#editNote');    // 비고
 const btnSaveProfile = $('#btnSaveProfile');
@@ -836,7 +839,13 @@ function renderMember(d){
   if(!d) return;
 
   // --- 회원 기본정보 ---
-  if(mPhoneTeam) mPhoneTeam.textContent = `${fmtPhone(d.phone)} · ${d.team||'-'}`;
+  if (mTeam)  mTeam.textContent  = d.team || '-';
+  if (mEmail) mEmail.textContent = d.email || '-';
+  if (mPhone) mPhone.textContent = fmtPhone(d.phone) || '-';
+  
+  if (mCar)   mCar.textContent  = d.car  || '-';
+  if (mNote)  mNote.textContent = d.note || '-';
+
   if(mCar)       mCar.textContent  = d.car  || '-';
   if(mNote)      mNote.textContent = d.note || '-';
   if(mStamp)     mStamp.textContent = d.stamp || 0;
@@ -847,6 +856,7 @@ function renderMember(d){
 
   if(editName) editName.value = d.name || '';
   if(editTeam) editTeam.value = d.team || '';
+  if(editEmail) editEmail.value = d.email || '';
   if(editCar)  editCar.value  = d.car || '';
   if(editNote) editNote.value = d.note || '';
 
@@ -1100,8 +1110,9 @@ btnSaveProfile?.addEventListener('click', async()=>{
    const team = editTeam?.value?.trim() || '';
    const car  = editCar?.value?.trim()  || '';
    const note = editNote?.value?.trim() || '';
+   const email = editEmail?.value?.trim() || '';
    try{
-     await currentMemberRef.update({ name, team, car, note, updatedAt: ts() });
+     await currentMemberRef.update({ name, team, email, car, note, updatedAt: ts() });
     await addLog('profile_save', {name, team});
     const d = (await currentMemberRef.get()).data();
     renderMember(d);
