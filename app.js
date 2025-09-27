@@ -468,7 +468,25 @@ let qrScanRunning = false;
 const qrDetector = ('BarcodeDetector' in window)
   ? new BarcodeDetector({ formats: ['qr_code'] })
   : null;
+// === 디버그 패널 토글/복사/지우기 ===
+const dbgToggle = byId('__dbgToggle');
+const dbgPanel  = byId('__dbgPanel');
+const dbgClose  = byId('__dbgClose');
+const dbgCopy   = byId('__dbgCopy');
+const dbgClear  = byId('__dbgClear');
+const dbgArea   = byId('__dbgArea');
 
+dbgToggle?.addEventListener('click', ()=> dbgPanel?.classList.toggle('hidden'));
+dbgClose ?.addEventListener('click', ()=> dbgPanel?.classList.add('hidden'));
+dbgCopy  ?.addEventListener('click', async ()=>{
+  try{
+    await navigator.clipboard.writeText(dbgArea?.value || '');
+    toast('디버그 로그를 클립보드에 복사했습니다.');
+  }catch(e){ console.error('dbg copy',e); toast('복사 실패'); }
+});
+dbgClear ?.addEventListener('click', ()=>{
+  if(dbgArea) dbgArea.value='';
+});
 // 5) 인증 상태
 auth.onAuthStateChanged(async(user)=>{
   if(user){
@@ -680,7 +698,11 @@ signupForm?.addEventListener('submit', async (e) => {
 
   } catch(e) {
     console.error('signup submit error', e);
-    toast('회원가입 실패: ' + (e?.message || e));
+    if (e?.code === 'auth/email-already-in-use') {
+      toast('이미 가입된 번호입니다. 로그인으로 진행해 주세요.');
+    } else {
+      toast('회원가입 실패: ' + (e?.message || e));
+    }
   }
 });
 
@@ -852,8 +874,6 @@ function renderMember(d){
   if (mCar)   mCar.textContent  = d.car  || '-';
   if (mNote)  mNote.textContent = d.note || '-';
 
-  if(mCar)       mCar.textContent  = d.car  || '-';
-  if(mNote)      mNote.textContent = d.note || '-';
   if(mStamp)     mStamp.textContent = d.stamp || 0;
   if (mFree)   mFree.textContent   = sumNamedValidBatches(d.passBatches, '무료권');
   if (mFreeWk) mFreeWk.textContent = sumNamedValidBatches(d.passBatches, '평일무료권');
@@ -1695,22 +1715,4 @@ qrClose  ?.addEventListener('click', stopQRScanner);
 window.addEventListener('pagehide', stopQRScanner); // 페이지 떠날 때 카메라 정리
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
-// === 디버그 패널 토글/복사/지우기 ===
-const dbgToggle = byId('__dbgToggle');
-const dbgPanel  = byId('__dbgPanel');
-const dbgClose  = byId('__dbgClose');
-const dbgCopy   = byId('__dbgCopy');
-const dbgClear  = byId('__dbgClear');
-const dbgArea   = byId('__dbgArea');
 
-dbgToggle?.addEventListener('click', ()=> dbgPanel?.classList.toggle('hidden'));
-dbgClose ?.addEventListener('click', ()=> dbgPanel?.classList.add('hidden'));
-dbgCopy  ?.addEventListener('click', async ()=>{
-  try{
-    await navigator.clipboard.writeText(dbgArea?.value || '');
-    toast('디버그 로그를 클립보드에 복사했습니다.');
-  }catch(e){ console.error('dbg copy',e); toast('복사 실패'); }
-});
-dbgClear ?.addEventListener('click', ()=>{
-  if(dbgArea) dbgArea.value='';
-});
