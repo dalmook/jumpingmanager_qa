@@ -625,7 +625,7 @@ signupForm?.addEventListener('submit', async (e) => {
   if (!team)  return toast('팀명을 입력하세요.');
   if (!agree) return toast('개인정보 활용에 동의해 주세요.');
 
-  try{
+  try {
     // 손님 로그인 정책 유지: phone@phone.local 를 Auth 계정으로 사용
     const authEmail = toEmailFromPhone(phone);
     const cred = await auth.createUserWithEmailAndPassword(authEmail, pass);
@@ -648,17 +648,17 @@ signupForm?.addEventListener('submit', async (e) => {
       }, { merge: true });
     });
 
-signupModal?.classList.add('hidden');
-toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
-document.getElementById("loginEmail")?.value = '';
-document.getElementById("loginPass")?.value  = '';
+    signupModal?.classList.add('hidden');
+    toast('회원가입 완료! 이제 휴대폰번호와 비밀번호로 로그인하세요.');
+    document.getElementById("loginEmail")?.value = '';
+    document.getElementById("loginPass")?.value  = '';
 
-
-  }catch(e){
+  } catch(e) {
     console.error('signup submit error', e);
     toast('회원가입 실패: ' + (e?.message || e));
   }
 });
+
 // 8) 로그아웃
 btnLogout?.addEventListener('click', async()=>{
   try{
