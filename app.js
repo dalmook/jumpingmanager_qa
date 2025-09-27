@@ -602,45 +602,10 @@ btnLogin?.addEventListener("click", async () => {
 
 // 7) 회원가입 버튼: 모달 열기
 // 8) 회원가입 실행
-btnDoSignup?.addEventListener('click', async () => {
-  // ✅ 개인정보 동의 체크 확인
-  if (!suAgree?.checked) {
-    alert('개인정보 수집·이용에 동의해야 가입할 수 있습니다.');
-    return;
-  }
-
-  const name  = suName?.value.trim();
-  const phone = canonPhone(suPhone?.value);
-  const pass  = suPass?.value;
-  const email = suEmail?.value.trim();
-  const team  = suTeam?.value.trim();
-  const car   = suCar?.value.trim();
-
-  if (!name || !phone || !pass || !email || !team) {
-    alert('필수 입력값을 모두 채워주세요.');
-    return;
-  }
-
-  try {
-    // Firebase Auth 생성
-    const cred = await auth.createUserWithEmailAndPassword(email, pass);
-
-    // Firestore 저장
-    await db.collection('members').doc(phone).set({
-      name, phone, team, car,
-      stamp: 0, freeCredits: 0, freeWeekday: 0, freeSlush: 0,
-      passes: {}, passBatches: {},
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid: cred.user.uid
-    });
-
-    alert('회원가입이 완료되었습니다.');
-    signupModal?.classList.add('hidden');
-
-  } catch (e) {
-    console.error('회원가입 오류', e);
-    alert('회원가입 실패: ' + (e.message || e));
-  }
+// 8) 회원가입 실행 (버튼 → 폼 제출만)
+btnDoSignup?.addEventListener('click', (e) => {
+  e.preventDefault();
+  signupForm?.requestSubmit();   // ← 실제 로직은 submit 핸들러에서만 처리
 });
 
 
