@@ -433,17 +433,22 @@ input, select{ min-height:42px; }
   #memberSection .section-card .row{ flex-wrap:wrap; }
 }
 
+/* 항상 최우선 숨김 */
+.hidden { display: none !important; }
+
 /* Seg-header */
 .seg-head{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+
 /* Sign-up modal fine-tune (선택) */
 #signupForm input { width:100%; }
 @media (max-width:680px){
   #signupForm { grid-template-columns: 1fr !important; }
 }
+
 /* === PC에서 관리자 패널 2컬럼 (좌: 목록, 우: 상세) === */
 @media (min-width: 1024px) {
-  /* 패널을 가로 배치 */
-  #adminPanel {
+  /* 패널을 가로 배치 — 숨김이 아닐 때만 */
+  #adminPanel:not(.hidden) {
     display: flex;
     align-items: flex-start;
     gap: 16px;
@@ -451,15 +456,15 @@ input, select{ min-height:42px; }
 
   /* 좌측 회원 목록: 고정폭 */
   #adminList {
-    flex: 0 0 360px;      /* ← 필요시 320~400px로 조절 */
+    flex: 0 0 360px;
     max-width: 360px;
   }
 
   /* 우측 회원 상세: 넓게 */
   #memberSection {
     flex: 1 1 0;
-    min-width: 720px;     /* ← 데스크톱에서 최소 폭 확보 */
-    max-width: none;      /* 기존 max-width가 있다면 무시 */
+    min-width: 720px;
+    max-width: none;
   }
 }
 
@@ -471,7 +476,7 @@ input, select{ min-height:42px; }
 /* 상세 카드 내부에서 선택/입력 UI가 잘리지 않도록 */
 #memberSection .row { 
   display: flex;
-  flex-wrap: wrap;        /* 긴 셀렉트/인풋 줄바꿈 허용 */
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -481,13 +486,14 @@ input, select{ min-height:42px; }
 #passCount,
 #passDelta {
   width: 100%;
-  max-width: 480px;       /* 넉넉한 한 줄 폭 */
+  max-width: 480px;
 }
 
 /* 카드 본문이 overflow:hidden이면 선택 박스가 잘릴 수 있음 → 보이게 */
 #memberSection .card .body {
   overflow: visible;
 }
+
 /* === 관리자 로그 리스트 === */
 #logList { display: flex; flex-direction: column; gap: 8px; }
 .log-item {
