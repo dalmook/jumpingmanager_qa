@@ -570,6 +570,18 @@ auth.onAuthStateChanged(async(user)=>{
     hideMemberPanel();
   }
 });
+btnSignup?.addEventListener('click', () => {
+  // 초기화
+  if (suName)  suName.value = '';
+  if (suPhone) suPhone.value = (document.getElementById("loginEmail")?.value || '').replace(/\D/g,'');
+  if (suPass)  suPass.value = document.getElementById("loginPass")?.value || '';
+  if (suEmail) suEmail.value = '';
+  if (suTeam)  suTeam.value = '';
+  if (suCar)   suCar.value = '';
+  if (suAgree) suAgree.checked = false;
+
+  signupModal?.classList.remove('hidden');
+});
 
 // 6) 로그인: 관리자(이메일) / 손님(휴대폰)
 btnLogin?.addEventListener("click", async () => {
