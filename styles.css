@@ -488,3 +488,21 @@ input, select{ min-height:42px; }
 #memberSection .card .body {
   overflow: visible;
 }
+/* === 관리자 로그 리스트 === */
+#logList { display: flex; flex-direction: column; gap: 8px; }
+.log-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 10px; border: 1px solid #eee; border-radius: 10px; background: #fff;
+}
+.log-left { display: flex; gap: 10px; align-items: center; }
+.log-icon { font-size: 18px; }
+.log-main { display: flex; flex-direction: column; }
+.log-title { font-weight: 700; }
+.log-detail { font-size: 12px; }
+.log-right { text-align: right; min-width: 180px; }
+.log-when { font-size: 12px; }
+.log-who  { font-size: 12px; }
+.btn-more {
+  margin-top: 8px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ddd; background: #fafafa; cursor: pointer;
+}
+.btn-more:hover { background: #f3f3f3; }
