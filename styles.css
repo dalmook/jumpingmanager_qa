@@ -491,3 +491,49 @@ input,select{
 }
 
 /* 모바일(기존) 동작은 그대로 — 별도 수정 없음 */
+/* ===== Desktop 전용: 좌측 고정 사이드바 + 우측 넓은 상세 ===== */
+@media (min-width: 1024px){
+
+  /* 상단 툴바(얇은 타이틀 바) */
+  .admin-toolbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 10px 12px; margin-bottom: 8px;
+    background:#fff; border:1px solid var(--line); border-radius:12px;
+    box-shadow: var(--shadow);
+  }
+  .admin-toolbar h2{ margin:0; font-size:18px; font-weight:900 }
+
+  /* 그리드 폭 조정: 좌 420px(고정), 우 가변 */
+  .admin-grid{
+    grid-template-columns: 420px 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* 좌측 회원목록 = 고정 사이드바화 */
+  .admin-grid .sidebar{
+    position: sticky;
+    top: calc(12px + var(--safe-top, 0px));
+    max-height: calc(100vh - 120px);     /* 헤더/툴바 고려 */
+    overflow: auto;                       /* 사이드바 내부 스크롤 */
+    /* 시각적으로 분리감 강화(샘플 관리자 테마 느낌) */
+    background: #fff;                     /* 필요시 #fbfbfb 등 */
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+
+  /* 우측 상세 영역은 컨테이너 여백 살짝 늘리고 타이틀/수치 행 가독성 향상 */
+  .admin-detail{
+    padding: 18px;
+  }
+
+  /* 상세 상단 KPI 줄(스탬프/무료권/…)이 행간/여백 더 넓게 보이도록 */
+  .admin-detail .stats{
+    gap: 12px;
+  }
+
+  /* (구) 상단 세그먼트 카드가 남아있다면 숨김 */
+  .seg-head{ display:none !important; }
+}
+
+/* 모바일/태블릿은 기존 스타일 그대로 유지 */
