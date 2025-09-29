@@ -490,50 +490,42 @@ input,select{
   .seg-head{ display:none !important; }
 }
 
-/* 모바일(기존) 동작은 그대로 — 별도 수정 없음 */
-/* ===== Desktop 전용: 좌측 고정 사이드바 + 우측 넓은 상세 ===== */
+/* ===== Desktop: 좌측 사이드바 고정 + 우측 상세 전체 ===== */
 @media (min-width: 1024px){
 
-  /* 상단 툴바(얇은 타이틀 바) */
-  .admin-toolbar{
-    display:flex; align-items:center; justify-content:space-between;
-    padding: 10px 12px; margin-bottom: 8px;
-    background:#fff; border:1px solid var(--line); border-radius:12px;
-    box-shadow: var(--shadow);
+  /* 전체 폭을 관리자 스타일처럼 넓게 쓰고 싶다면(선택) */
+  .app-shell{
+    max-width: 1400px;   /* 필요시 100%로도 가능 */
   }
-  .admin-toolbar h2{ margin:0; font-size:18px; font-weight:900 }
 
-  /* 그리드 폭 조정: 좌 420px(고정), 우 가변 */
+  /* 2칼럼: 좌 320px 고정, 우측 나머지 전체 */
   .admin-grid{
-    grid-template-columns: 420px 1fr;
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
     gap: 20px;
     align-items: start;
   }
 
-  /* 좌측 회원목록 = 고정 사이드바화 */
+  /* 좌측 회원목록 = '고정' 사이드바처럼 동작 */
   .admin-grid .sidebar{
-    position: sticky;
-    top: calc(12px + var(--safe-top, 0px));
-    max-height: calc(100vh - 120px);     /* 헤더/툴바 고려 */
-    overflow: auto;                       /* 사이드바 내부 스크롤 */
-    /* 시각적으로 분리감 강화(샘플 관리자 테마 느낌) */
-    background: #fff;                     /* 필요시 #fbfbfb 등 */
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
+    position: sticky;                       /* 스크롤해도 고정 */
+    top: calc(12px + var(--safe-top, 0px)); /* 헤더 여백 보정 */
+    height: calc(100vh - 120px);            /* 화면 높이 따라 길쭉하게 */
+    overflow: auto;                         /* 내부만 스크롤 */
+    /* 카드 느낌 줄이고 좌측 패널 느낌 강화하고 싶다면: */
+    /* background:#fff; border:1px solid var(--line); box-shadow:var(--shadow); */
   }
 
-  /* 우측 상세 영역은 컨테이너 여백 살짝 늘리고 타이틀/수치 행 가독성 향상 */
+  /* 우측 상세는 남은 공간을 전부 사용 */
   .admin-detail{
     padding: 18px;
+    min-height: calc(100vh - 120px);
   }
 
-  /* 상세 상단 KPI 줄(스탬프/무료권/…)이 행간/여백 더 넓게 보이도록 */
-  .admin-detail .stats{
-    gap: 12px;
-  }
-
-  /* (구) 상단 세그먼트 카드가 남아있다면 숨김 */
-  .seg-head{ display:none !important; }
+  /* 데스크톱에선 예전 상단 세그먼트 카드가 보이면 숨김 */
+  .seg-head{ display: none !important; }
 }
+
+/* 모바일/태블릿은 기존 동작 유지 */
 
 /* 모바일/태블릿은 기존 스타일 그대로 유지 */
