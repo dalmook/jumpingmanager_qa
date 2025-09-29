@@ -528,4 +528,31 @@ input,select{
 
 /* 모바일/태블릿은 기존 동작 유지 */
 
-/* 모바일/태블릿은 기존 스타일 그대로 유지 */
+/* ===== Admin tidy layout for actions ===== */
+.admin-actions-grid{
+  display:grid; gap:16px;
+}
+@media (min-width:1024px){
+  .admin-actions-grid{
+    grid-template-columns: 1fr 1fr; /* 스탬프/무료권 | 다회권 */
+  }
+}
+.tidy-card{ padding:16px }
+.group-title{ margin:0 0 10px; font-size:16px; font-weight:900 }
+
+.btn-row{ display:flex; gap:8px; align-items:center; margin:6px 0 10px }
+.small-btns{ display:flex; gap:6px; align-items:center }
+
+.field-group{ margin-top:12px }
+.field-label{ display:block; font-size:13px; font-weight:800; color:#6a5544; margin-bottom:6px }
+.field-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+.field-grid{
+  display:grid; gap:8px;
+  grid-template-columns: 1.6fr 0.8fr 1fr auto; /* name | count | expire | add */
+}
+@media (max-width:680px){
+  .field-grid{ grid-template-columns: 1fr } /* 모바일: 1열 */
+}
+.hint{ margin:4px 0 0; font-size:12px; color:var(--muted) }
+
+.tidy-danger{ border-left:4px solid #ff6b81 }
