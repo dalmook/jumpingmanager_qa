@@ -528,31 +528,31 @@ input,select{
 
 /* 모바일/태블릿은 기존 동작 유지 */
 
-/* ===== Admin tidy layout for actions ===== */
-.admin-actions-grid{
-  display:grid; gap:16px;
-}
-@media (min-width:1024px){
-  .admin-actions-grid{
-    grid-template-columns: 1fr 1fr; /* 스탬프/무료권 | 다회권 */
-  }
-}
+/* ===== Admin detail tidy ===== */
 .tidy-card{ padding:16px }
 .group-title{ margin:0 0 10px; font-size:16px; font-weight:900 }
 
-.btn-row{ display:flex; gap:8px; align-items:center; margin:6px 0 10px }
-.small-btns{ display:flex; gap:6px; align-items:center }
+.tidy-row{ display:flex; align-items:center; gap:10px; margin:6px 0 12px }
+.btn-row{ display:flex; align-items:center; gap:8px; margin:6px 0 10px }
 
 .field-group{ margin-top:12px }
 .field-label{ display:block; font-size:13px; font-weight:800; color:#6a5544; margin-bottom:6px }
 .field-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+
 .field-grid{
   display:grid; gap:8px;
-  grid-template-columns: 1.6fr 0.8fr 1fr auto; /* name | count | expire | add */
+  grid-template-columns: 1.6fr 0.8fr 1fr auto;  /* name | count | expire | add */
 }
 @media (max-width:680px){
-  .field-grid{ grid-template-columns: 1fr } /* 모바일: 1열 */
+  .field-grid{ grid-template-columns: 1fr }
 }
-.hint{ margin:4px 0 0; font-size:12px; color:var(--muted) }
 
-.tidy-danger{ border-left:4px solid #ff6b81 }
+.btn-group{ display:flex; gap:8px; align-items:center }
+
+/* 크기 유틸 */
+.w110{ width:110px }
+.w160{ width:160px }
+.btn.lg{ padding:14px 18px; border-radius:14px; font-size:16px; font-weight:900 }
+
+/* 위험 박스 강조 */
+.tidy-danger{ border-left:4px solid var(--danger, #ff6b81) }
