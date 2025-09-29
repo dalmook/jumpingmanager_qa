@@ -730,6 +730,15 @@ btnLogout?.addEventListener('click', async()=>{
   try{
     await auth.signOut();
     mascot?.classList.add('hidden');   // ← 추가: 즉시 숨김
+
+    // ✅ 관리자 화면 숨기기
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) adminPanel.classList.add('hidden');
+
+    // ✅ 회원 상세 비우기
+    const adminList = document.getElementById('adminList');
+    if (adminList) adminList.innerHTML = '';
+    
     const qrTarget = document.getElementById('selfBigQR');
     if (qrTarget) qrTarget.innerHTML = '';
     const dlBtn = document.getElementById('btnQRDownload');
