@@ -693,6 +693,7 @@ signupForm?.addEventListener('submit', async (e) => {
         ...base,
         name,
         phone,
+        phoneLast4: phone.slice(-4),
         updatedAt: ts(),
         uid: cred.user?.uid || null
       };
