@@ -459,6 +459,7 @@ btnRegister?.addEventListener('click', async ()=>{
         ...base,
         name: name || base.name,
         team: team || base.team,
+        phoneLast4: phone.slice(-4),
         updatedAt: ts()
       }, { merge:true });
     });
