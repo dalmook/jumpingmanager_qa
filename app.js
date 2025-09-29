@@ -764,7 +764,14 @@ async function loadAllMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className = 'item';
-      div.textContent = `${d.name || '-'}.${fmtPhone(d.phone || '')}.${d.team || '-'}`;
+      div.innerHTML = `
+  <span class="m-name">${d.name || '-'}</span>
+  <span class="sep"> | </span>
+  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+  <span class="sep"> | </span>
+  <span class="m-team">${d.team || '-'}</span>
+`;
+
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -802,7 +809,14 @@ async function searchMembers(){
       const d = doc.data() || {};
       const div = document.createElement('div');
       div.className='item';
-      div.textContent = `${d.name || '-'}.${fmtPhone(d.phone || '')}.${d.team || '-'}`;
+      div.innerHTML = `
+  <span class="m-name">${d.name || '-'}</span>
+  <span class="sep"> | </span>
+  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+  <span class="sep"> | </span>
+  <span class="m-team">${d.team || '-'}</span>
+`;
+
       div.dataset.id = doc.id;
       div.style.cursor='pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
@@ -1882,3 +1896,16 @@ window.addEventListener('pagehide', stopQRScanner); // 페이지 떠날 때 카�
 
 console.log('app.js loaded: admin edit + visits + passes + logs + N-delta + deletions + self tabs');
 
+// ✅ 회원목록에서 선택된 항목 하이라이트
+if (adminList) {
+  adminList.addEventListener('click', (e) => {
+    const item = e.target.closest('.item');
+    if (!item || !adminList.contains(item)) return;
+
+    // 기존 선택 해제
+    adminList.querySelectorAll('.item.selected').forEach(el => el.classList.remove('selected'));
+
+    // 새로 선택된 항목 강조
+    item.classList.add('selected');
+  });
+}
