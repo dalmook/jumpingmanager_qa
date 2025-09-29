@@ -556,3 +556,8 @@ input,select{
 
 /* 위험 박스 강조 */
 .tidy-danger{ border-left:4px solid var(--danger, #ff6b81) }
+/* ===== 스탬프/다회권 +N/-N 버튼 폭 보정 ===== */
+#memberSection .btn-group .btn {
+  min-width: 72px;   /* 기본 버튼보다 살짝 넓게 */
+  text-align: center;
+}
