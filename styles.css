@@ -469,3 +469,25 @@ input,select{
   background: #f6fff6;          /* 살짝 밝은 배경 */
   box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
 }
+/* ===== Desktop 전용 레이아웃 조정 ===== */
+@media (min-width: 1024px){
+  /* 그리드: 사이드바 넓히고 상세 영역을 더 크게 */
+  .admin-grid{
+    grid-template-columns: 420px 1fr;  /* 좌측 420px 고정, 우측 가변 */
+    gap: 20px;
+    align-items: start;
+  }
+
+  /* 좌측 회원목록을 '고정 사이드바'처럼 보이게 (세로 스크롤 허용) */
+  .admin-grid .sidebar{
+    position: sticky;
+    top: calc(12px + var(--safe-top, 0px));
+    max-height: calc(100vh - 120px);  /* 헤더 높이 감안한 안전치 */
+    overflow: auto;                    /* 목록 길어지면 사이드바 내부만 스크롤 */
+  }
+
+  /* (데스크톱에서는 예전 상단 세그먼트/QR 카드가 사라졌으므로 여분 스타일 제거용) */
+  .seg-head{ display:none !important; }
+}
+
+/* 모바일(기존) 동작은 그대로 — 별도 수정 없음 */
