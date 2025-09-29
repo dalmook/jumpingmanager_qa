@@ -205,11 +205,14 @@
           <select id="passSelect"></select>
           <input id="passDelta" type="number" min="1" step="1" value="1" />
           <div class="btn-group">
-            <button id="btnUsePassN"    class="btn">-N</button>
-            <button id="btnRefundPassN" class="btn ghost">+N</button>
+            <!-- +N 먼저, primary 색상 -->
+            <button id="btnRefundPassN" class="btn primary">+N</button>
+            <!-- -N 나중, ghost 색상 -->
+            <button id="btnUsePassN"    class="btn ghost">-N</button>
           </div>
         </div>
       </div>
+      
 
       <!-- 삭제는 위험 작업으로 아래에서 -->
     </section>
