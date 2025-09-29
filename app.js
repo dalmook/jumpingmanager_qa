@@ -287,6 +287,7 @@ const btnSignup = $('#btnSignup');
 const btnLogout = $('#btnLogout');
 const mascot = document.querySelector('.mascot-badge');
 
+
 // 모달/폼/필드 참조
 const signupModal = document.getElementById('signupModal');
 const signupForm  = document.getElementById('signupForm');
@@ -434,6 +435,43 @@ const selfPassList  = document.getElementById('selfPassList');
 const selfLogList   = document.getElementById('selfLogList');
 
 
+// === Theme: 라이트/다크 토글 ===
+const btnTheme = document.getElementById('btnTheme');
+const THEME_KEY = '__theme';  // 'light' | 'dark'
+
+function applyTheme(theme){
+  const root = document.documentElement;
+  const t = (theme === 'dark') ? 'dark' : 'light';
+  root.setAttribute('data-theme', t);
+  // 아이콘: 현재 보여줄 "전환 대상" 아이콘
+  if (btnTheme) btnTheme.textContent = (t === 'dark') ? '☀️' : '🌙';
+}
+
+function detectSystemTheme(){
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark' : 'light';
+}
+
+function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY);
+  applyTheme(saved || detectSystemTheme());
+}
+
+btnTheme?.addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = (cur === 'dark') ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+});
+
+// 최초 1회 적용
+initTheme();
+
+// 시스템 테마가 바뀌면(사용자가 저장을 안 해둔 경우만) 따라가고 싶다면 아래 주석 해제
+// window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e=>{
+//   const saved = localStorage.getItem(THEME_KEY);
+//   if (!saved) applyTheme(e.matches ? 'dark' : 'light');
+// });
 
 
 // === 빠른 회원 등록/수정 ===
