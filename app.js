@@ -759,14 +759,50 @@ btnLoadAll?.addEventListener('click', loadAllMembers);
 btnSearch?.addEventListener('click', searchMembers);
 searchPhone?.addEventListener('keyup', (e)=>{ if(e.key==='Enter') searchMembers(); });
 
-async function loadAllMembers(){
+// ===== 회원 목록: 단발성 + 페이지네이션 =====
+let __membersCursor = null;
+const PAGE_SIZE = 20;
+
+// "더 보기" 버튼 보장 유틸 (HTML에 없으면 자동 생성)
+function ensureMoreMembersButton() {
+  let btn = document.getElementById('btnMoreMembers');
+  if (!btn && adminList && adminList.parentElement) {
+    btn = document.createElement('button');
+    btn.id = 'btnMoreMembers';
+    btn.type = 'button';
+    btn.className = 'btn ghost small mt8';
+    btn.textContent = '더 보기';
+    btn.addEventListener('click', () => loadAllMembers(false));
+    adminList.parentElement.appendChild(btn);
+  }
+  return btn;
+}
+
+async function loadAllMembers(reset = true){
   if(!adminList) return;
-  adminList.innerHTML = '<div class="muted">불러오는 중…</div>';
+  if (reset) {
+    adminList.innerHTML = '<div class="muted">불러오는 중…</div>';
+    __membersCursor = null;
+  } else {
+    // 추가 로딩 표시(선택)
+  }
+
   try{
-    let qs;
-    try{ qs = await db.collection('members').orderBy('updatedAt','desc').limit(100).get(); }
-    catch{ qs = await db.collection('members').orderBy('phone').limit(100).get(); }
-    if(qs.empty){ adminList.innerHTML = '<div class="muted">회원 없음</div>'; return; }
+    let q = db.collection('members').orderBy('phone').limit(PAGE_SIZE);
+    if (__membersCursor) q = q.startAfter(__membersCursor);
+
+    const qs = await q.get();   // ← onSnapshot 사용 안 함(읽기 절약)
+    if (reset) adminList.innerHTML = '';
+
+    if (qs.empty) {
+      if (!adminList.children.length) {
+        adminList.innerHTML = '<div class="muted">회원 없음</div>';
+      }
+      // 더 이상 로드할 게 없으면 버튼 숨김
+      const btn = document.getElementById('btnMoreMembers');
+      if (btn) btn.classList.add('hidden');
+      return;
+    }
 
     const frag = document.createDocumentFragment();
     qs.forEach(doc=>{
@@ -774,22 +810,32 @@ async function loadAllMembers(){
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `
-  <span class="m-name">${d.name || '-'}</span>
-  <span class="sep"> | </span>
-  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-  <span class="sep"> | </span>
-  <span class="m-team">${d.team || '-'}</span>
-`;
-
+        <span class="m-name">${d.name || '-'}</span>
+        <span class="sep"> | </span>
+        <span class="m-phone">${fmtPhone(d.phone || '')}</span>
+        <span class="sep"> | </span>
+        <span class="m-team">${d.team || '-'}</span>
+      `;
       div.dataset.id = doc.id;
       div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
       frag.appendChild(div);
     });
-    adminList.innerHTML = '';
     adminList.appendChild(frag);
-  }catch(e){ console.error('loadAllMembers',e); adminList.innerHTML = '로드 실패: '+e.message; }
+
+    // 다음 페이지 커서 갱신
+    __membersCursor = qs.docs[qs.docs.length - 1];
+
+    // "더 보기" 버튼 노출 보장
+    const btn = ensureMoreMembersButton();
+    if (btn) btn.classList.remove('hidden');
+
+  }catch(e){
+    console.error('loadAllMembers',e);
+    adminList.innerHTML = '로드 실패: '+(e?.message||e);
+  }
 }
+
 
 async function searchMembers(){
   if(!adminList) return;
