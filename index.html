@@ -132,91 +132,105 @@
               </div>
             </div>
 
-<!-- 액션: 스탬프/무료권 + 다회권 (정돈 버전) -->
-<div class="admin-actions-grid mt16">
-  <!-- [A] 스탬프 · 무료권 -->
-  <section class="section-card tidy-card">
-    <h3 class="group-title">스탬프 · 무료권</h3>
+            <!-- 액션: 스탬프/무료권 + 다회권 -->
+            <div class="admin-actions">
+              <!-- 스탬프/무료권 -->
+              <div class="section-card">
+                <h3>스탬프 / 무료권</h3>
 
-    <!-- 방문 +1 (가장 많이 쓰는 주버튼) -->
-    <div class="btn-row">
-      <button id="btnAddVisit" class="btn primary">방문 +1</button>
-      <!-- 스탬프 0은 실수 방지 위해 위험영역으로 이동 -->
-    </div>
+                <div class="btn-grid mt8">
+                  <button id="btnAddVisit" class="btn primary">방문 +1</button>
+                  <button id="btnResetStamp" class="btn ghost">스탬프 0</button>
+                </div>
 
-    <!-- 스탬프 증감 -->
-    <div class="field-group">
-      <label class="field-label" for="stampDelta">스탬프 조정</label>
-      <div class="field-row">
-        <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
-        <div class="small-btns">
-          <button id="btnAddStampN" class="btn primary small">+N</button>
-          <button id="btnSubStampN" class="btn ghost small" data-confirm="스탬프 N개 차감할까요?">-N</button>
-        </div>
+                <!-- 스탬프 N 증감 -->
+                <div class="input-actions">
+                  <div class="ia-row">
+                    <label for="stampDelta" class="ia-label">스탬프</label>
+                    <input id="stampDelta" type="number" min="1" step="1" value="1" />
+                    <div class="ia-buttons">
+                      <button id="btnAddStampN" class="btn primary">+N</button>
+                      <button id="btnSubStampN" class="btn ghost">-N</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 슬러시 무료권 N 증감 -->
+                <div class="input-actions mt8">
+                  <div class="ia-row">
+                    <label for="freeSlDelta" class="ia-label">슬러시 무료권</label>
+                    <input id="freeSlDelta" type="number" min="1" step="1" value="1" />
+                    <div class="ia-buttons">
+                      <button id="btnAddFreeSlN" class="btn primary">+N</button>
+                      <button id="btnSubFreeSlN" class="btn ghost">-N</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 다회권 -->
+              <div class="section-card" id="passCard">
+                <div class="section-row">
+                  <h3>다회권</h3>
+                  <div class="row gap8">
+                    <button id="passPreset10" class="btn ghost small">10회권</button>
+                    <button id="passPreset20" class="btn ghost small">20회권</button>
+                    <button id="passPresetFree" class="btn ghost small">무료권</button>
+                    <button id="passPresetWk"   class="btn ghost small">평일무료권</button>
+                  </div>
+                </div>
+
+                <!-- 추가 폼 -->
+                <div class="pass-add-grid mt8">
+                  <input id="passName"  placeholder="권종명 (예: 10회권, 무료권, 평일무료권)" />
+                  <input id="passCount" type="number" min="1" step="1" value="1" />
+                  <input id="passExpire" type="date" />
+                  <button id="btnAddPass" class="btn primary">권종 추가</button>
+                </div>
+
+                <!-- 선택 후 차감/환불/삭제 -->
+                <div class="pass-op-grid mt8">
+                  <select id="passSelect"></select>
+                  <input id="passDelta" type="number" min="1" step="1" value="1" />
+                  <div class="row gap8">
+                    <button id="btnUsePassN" class="btn">-N</button>
+                    <button id="btnRefundPassN" class="btn ghost">+N</button>
+                  </div>
+                  <button id="btnDeletePass" class="btn danger wFull">선택권 삭제</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid two mt16">
+              <div class="section-card">
+                <h3>보유 다회권</h3>
+                <div id="passList" class="list small"></div>
+              </div>
+              <div class="section-card">
+                <h3>스테이지 기록</h3>
+                <div id="stageList" class="list small"></div>
+                <button id="btnSaveStages" class="btn primary small mt8">스테이지 저장</button>
+              </div>
+            </div>
+            <!-- 여기 아래에 활동 로그 블록 삽입 -->
+            <div class="row between" style="margin-top:8px;">
+              <h3 style="margin:0;">활동 로그</h3>
+              <div class="btns">
+                <button id="btnReloadLogs" type="button">새로고침</button>
+                <button id="btnMoreLogs"   type="button">더 보기</button>
+              </div>
+            </div>
+            <div id="logList" class="list small mt8"></div>
+            <!-- 위험 작업 -->
+            <div class="danger-zone section-card">
+              <div class="row wrap gap8">
+                <button id="btnDeleteMember" class="btn danger">회원 삭제</button>
+                <span class="muted">로그 서브컬렉션은 남습니다</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-      <p class="hint">※ 10개마다 <b>무료권 1매 자동 적립</b></p>
-    </div>
-
-    <!-- 슬러시 무료권 -->
-    <div class="field-group">
-      <label class="field-label" for="freeSlDelta">슬러시 무료권</label>
-      <div class="field-row">
-        <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
-        <div class="small-btns">
-          <button id="btnAddFreeSlN" class="btn primary small">+N</button>
-          <button id="btnSubFreeSlN" class="btn ghost small" data-confirm="슬러시 무료권 N매 차감할까요?">-N</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- [B] 다회권 -->
-  <section class="section-card tidy-card">
-    <h3 class="group-title">다회권 관리</h3>
-
-    <!-- 프리셋 -->
-    <div class="btn-row wrap">
-      <button id="passPreset10"  class="btn ghost small">10회권</button>
-      <button id="passPreset20"  class="btn ghost small">20회권</button>
-      <button id="passPresetFree" class="btn ghost small">무료권</button>
-      <button id="passPresetWk"   class="btn ghost small">평일무료권</button>
-    </div>
-
-    <!-- 추가 폼 -->
-    <div class="field-group">
-      <label class="field-label">권종 추가</label>
-      <div class="field-grid">
-        <input id="passName"  placeholder="권종명 (예: 10회권, 무료권, 평일무료권)" />
-        <input id="passCount" type="number" min="1" step="1" value="1" />
-        <input id="passExpire" type="date" />
-        <button id="btnAddPass" class="btn primary">추가</button>
-      </div>
-    </div>
-
-    <!-- 선택 후 증감 -->
-    <div class="field-group">
-      <label class="field-label" for="passSelect">보유 권종 조정</label>
-      <div class="field-grid">
-        <select id="passSelect"></select>
-        <input id="passDelta" type="number" min="1" step="1" value="1" />
-        <div class="small-btns">
-          <button id="btnUsePassN"    class="btn small" data-confirm="선택한 권종을 N회 사용 처리할까요?">-N</button>
-          <button id="btnRefundPassN" class="btn ghost small">+N</button>
-        </div>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- [위험 작업] — 실수 방지 분리 -->
-<div class="danger-zone section-card tidy-danger">
-  <div class="row wrap gap8">
-    <button id="btnResetStamp" class="btn danger" data-confirm="스탬프를 0으로 초기화할까요?">스탬프 0</button>
-    <button id="btnDeletePass" class="btn danger" data-confirm="선택한 권종을 삭제할까요?">선택권 삭제</button>
-    <button id="btnDeleteMember" class="btn danger" data-confirm="회원 정보를 삭제할까요? (로그는 남습니다)">회원 삭제</button>
-  </div>
-</div>
-
 
       <!-- 플로팅 단축(FAB) -->
       <div class="fab-area">
