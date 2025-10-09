@@ -401,14 +401,11 @@ const passPreset20 = $('#passPreset20');
 const passPresetFree = document.getElementById('passPresetFree');
 const passPresetWk   = document.getElementById('passPresetWk');
 
-
+// 관리자 화면에서 스탬프적립쿠폰 직접 발급 기능 제거
 passPresetFree?.addEventListener('click', ()=>{
-  if(passName&&passCount){
-    passName.value='스탬프적립쿠폰';
-    passCount.value='1';
-    setExpireDefaultByName('스탬프적립쿠폰');
-  }
+  toast('스탬프적립쿠폰은 관리자 화면에서 추가/수정할 수 없습니다. 스탬프 10개 달성 시 자동 발급됩니다.');
 });
+
 passPresetWk?.addEventListener('click', ()=>{
   if(passName&&passCount){
     passName.value='평일이용권';
@@ -1047,7 +1044,8 @@ function renderMember(d){
       item.textContent = line + '  [배치]';
       passList.appendChild(item);
     }
-    if(passSelect){
+    // 스탬프적립쿠폰은 관리자 조작 대상에서 제외(선택 불가)
+    if(passSelect && (b?.name !== '스탬프적립쿠폰')){
       const opt = document.createElement('option');
       opt.value = `batch:${id}`;
       opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
@@ -1066,7 +1064,8 @@ function renderMember(d){
       item.textContent = line + '  [레거시]';
       passList.appendChild(item);
     }
-    if(passSelect){
+    // (레거시에도 동일 정책 적용—이름이 스탬프적립쿠폰이면 제외)
+    if(passSelect && (k !== '스탬프적립쿠폰')){
       const opt = document.createElement('option');
       opt.value = `legacy:${k}`;
       opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
@@ -1485,6 +1484,9 @@ btnAddPass?.addEventListener('click', async()=>{
   const cnt      = parseInt(passCount?.value || '1', 10);
   const expireStr= document.getElementById('passExpire')?.value || '';
   if(!rawName || !(cnt > 0)) return toast('권종/수량 확인');
+  if (rawName.replace(/\s+/g,'') === '스탬프적립쿠폰'){
+    return toast('스탬프적립쿠폰은 관리자 화면에서 추가할 수 없습니다. 스탬프 10개 달성 시 자동 발급됩니다.');
+  }  
 
   try{
     await db.runTransaction(async(tx)=>{
