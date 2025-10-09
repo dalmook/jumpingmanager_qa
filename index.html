@@ -63,8 +63,10 @@
         <div class="search-row">
           <input id="searchPhone" placeholder="휴대폰 전체/끝 4자리" inputmode="numeric" />
           <button id="btnSearch" class="btn ghost">검색</button>
+          <button id="btnClearSearch" class="btn ghost small">✕</button>
           <button id="btnQRScan" class="btn small highlight">QR 스캔</button>
         </div>
+
 
         <div class="quick-register">
           <details>
@@ -95,10 +97,10 @@
           <div class="label">스탬프(10)</div><div id="mStamp" class="value">0</div>
         </div>
         <div class="stat pill">
-          <div class="label">무료권</div><div id="mFree" class="value">0</div>
+          <div class="label">스탬프적립쿠폰</div><div id="mFree" class="value">0</div>
         </div>
         <div class="stat pill">
-          <div class="label">평일무료권</div><div id="mFreeWk" class="value">0</div>
+          <div class="label">평일이용권</div><div id="mFreeWk" class="value">0</div>
         </div>
         <div class="stat pill">
           <div class="label">슬러시 무료권</div><div id="mFreeSl" class="value">0</div>
@@ -114,67 +116,71 @@
       <div id="stampDots" class="dots"></div>
     </div>
 
-    <!-- 1) 기본 정보 -->
-    <section class="section-card tidy-card">
-      <div class="section-row">
-        <h3 class="group-title">기본 정보</h3>
-        <button id="btnSaveProfile" class="btn primary small">프로필 저장</button>
-      </div>
-      <div class="grid three">
+    <!-- 1) 기본 정보 (접기/펼치기 가능) -->
+      <details class="section-card tidy-card" id="profileSection">
+        <summary class="section-row">
+          <div class="group-title-wrap">
+            <span class="toggle-icon">▶</span>
+            <h3 class="group-title">기본 정보</h3>
+          </div>
+          <button id="btnSaveProfile" class="btn primary small">프로필 저장</button>
+        </summary>
+        <div class="grid three">
         <label for="editName">이름</label>
         <input id="editName" placeholder="이름" />
-
+    
         <label for="editTeam">팀명</label>
         <input id="editTeam" placeholder="팀명" />
-
+    
         <label for="editEmail">이메일</label>
         <input id="editEmail" placeholder="이메일" />
-
+    
         <label for="editCar">차량번호</label>
         <input id="editCar" placeholder="차량번호 (선택)" />
-
+    
         <label for="editNote">비고</label>
         <input id="editNote" placeholder="비고 (선택)" />
-
+    
         <label>전화번호</label>
         <input disabled value="전화번호는 문서 키 기준" />
       </div>
-    </section>
+    </details>
 
-    <!-- 2) 방문/스탬프/무료권 -->
-    <section class="section-card tidy-card">
-      <h3 class="group-title">방문 · 스탬프 · 무료권</h3>
 
-      <!-- A. 가장 빈도 높은 주동작: 방문 +1 -->
-      <div class="tidy-row">
-        <button id="btnAddVisit" class="btn primary lg w160">방문 +1</button>
-      </div>
+<!-- 2) 방문/스탬프/스탬프적립쿠폰 -->
+<section class="section-card">
+  <h3 class="group-title">방문스탬프·슬러시 관리</h3>
 
-      <!-- B. 스탬프 조정 (+N / -N) -->
-      <div class="field-group">
-        <label class="field-label" for="stampDelta">스탬프 조정</label>
-        <div class="field-row">
-          <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
-          <div class="btn-group">
-            <button id="btnAddStampN" class="btn primary">+N</button>
-            <button id="btnSubStampN" class="btn ghost">-N</button>
-          </div>
-        </div>
-        <p class="hint">10개마다 <b>무료권 1매 자동 적립</b></p>
-      </div>
-
-      <!-- C. 슬러시 무료권 조정 (+N / -N) -->
-      <div class="field-group">
-        <label class="field-label" for="freeSlDelta">슬러시 무료권</label>
-        <div class="field-row">
-          <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
-          <div class="btn-group">
-            <button id="btnAddFreeSlN" class="btn primary">+N</button>
-            <button id="btnSubFreeSlN" class="btn ghost">-N</button>
-          </div>
+  <div class="grid two mt8">
+    <!-- ✅ 왼쪽: 스탬프 조정 -->
+    <div class="panel-sub">
+      <h4 class="sub-title">스탬프 조정</h4>
+      <div class="field-row">
+        <input id="stampDelta" type="number" min="1" step="1" value="1" class="w110" />
+        <div class="btn-group">
+          <button id="btnAddStampN" class="btn primary">+</button>
+          <button id="btnSubStampN" class="btn ghost">-</button>
         </div>
       </div>
-    </section>
+      <p class="hint">10개마다 <b>무료권 1매 자동 적립</b></p>
+    </div>
+
+    <!-- ✅ 오른쪽: 슬러시 무료권 -->
+    <div class="panel-sub">
+      <h4 class="sub-title">슬러시 무료권</h4>
+      <div class="field-row">
+        <input id="freeSlDelta" type="number" min="1" step="1" value="1" class="w110" />
+        <div class="btn-group">
+          <button id="btnAddFreeSlN" class="btn primary">+</button>
+          <button id="btnSubFreeSlN" class="btn ghost">-</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
 
     <!-- 3) 다회권 관리 -->
     <section class="section-card tidy-card" id="passCard">
@@ -184,15 +190,15 @@
       <div class="btn-row wrap">
         <button id="passPreset10"  class="btn ghost small">10회권</button>
         <button id="passPreset20"  class="btn ghost small">20회권</button>
-        <button id="passPresetFree" class="btn ghost small">무료권</button>
-        <button id="passPresetWk"   class="btn ghost small">평일무료권</button>
+        <button id="passPresetFree" class="btn ghost small">스탬프적립쿠폰</button>
+        <button id="passPresetWk"   class="btn ghost small">평일이용권</button>
       </div>
 
       <!-- 추가 폼 -->
       <div class="field-group">
         <label class="field-label">권종 추가</label>
         <div class="field-grid">
-          <input id="passName"  placeholder="권종명 (예: 10회권, 무료권, 평일무료권)" />
+          <input id="passName"  placeholder="권종명 (예: 10회권, 스탬프적립쿠폰, 평일이용권)" />
           <input id="passCount" type="number" min="1" step="1" value="1" />
           <input id="passExpire" type="date" />
           <button id="btnAddPass" class="btn primary">추가</button>
@@ -207,9 +213,9 @@
           <input id="passDelta" type="number" min="1" step="1" value="1" />
           <div class="btn-group">
             <!-- +N 먼저, primary 색상 -->
-            <button id="btnRefundPassN" class="btn primary">+N</button>
+            <button id="btnRefundPassN" class="btn primary">+</button>
             <!-- -N 나중, ghost 색상 -->
-            <button id="btnUsePassN"    class="btn ghost">-N</button>
+            <button id="btnUsePassN"    class="btn ghost">-</button>
           </div>
         </div>
       </div>
@@ -224,22 +230,37 @@
         <h3>보유 다회권</h3>
         <div id="passList" class="list small"></div>
       </section>
-      <section class="section-card">
-        <h3>스테이지 기록</h3>
-        <div id="stageList" class="list small"></div>
-        <button id="btnSaveStages" class="btn primary small mt8">스테이지 저장</button>
-      </section>
+    <!-- ✅ 스테이지 기록: 전체폭 + 접기/펼치기 (기본 접힘) -->
+    <details class="section-card tidy-card stage-full" id="stageSection">
+      <summary class="section-row">
+        <div class="group-title-wrap">
+          <span class="toggle-icon">▶</span>
+          <h3 class="group-title">레벨 기록</h3>
+        </div>
+        <button id="btnSaveStages" class="btn primary small">스테이지 저장</button>
+      </summary>
+    
+      <div id="stageList" class="list small mt8"></div>
+    </details>
     </div>
 
-    <!-- 5) 활동 로그 -->
-    <div class="row between mt8">
-      <h3 style="margin:0;">활동 로그</h3>
-      <div class="btns">
-        <button id="btnReloadLogs" type="button" class="btn ghost small">새로고침</button>
-        <button id="btnMoreLogs"   type="button" class="btn ghost small">더 보기</button>
-      </div>
-    </div>
-    <div id="logList" class="list small mt8"></div>
+    <!-- ✅ 활동로그: 접기/펼치기 (기본 접힘) -->
+    <details class="section-card tidy-card" id="logsSection">
+      <summary class="section-row">
+        <div class="group-title-wrap">
+          <span class="toggle-icon">▶</span>
+          <h3 class="group-title">활동 로그</h3>
+        </div>
+        <!-- 버튼은 그대로 유지 (ID 변경 금지) -->
+        <div class="row">
+          <button id="btnReloadLogs" class="btn small">새로고침</button>
+          <button id="btnMoreLogs"   class="btn ghost small">더 보기</button>
+        </div>
+      </summary>
+    
+      <div id="logList" class="list small"></div>
+    </details>
+
 
     <!-- 6) 위험 작업 (완전히 분리) -->
     <section class="danger-zone section-card tidy-danger">
@@ -253,14 +274,7 @@
   </div>
 </section>
 </div>
-      
-
-      <!-- 플로팅 단축(FAB) -->
-      <div class="fab-area">
-        <button id="fabAddVisit" class="fab" title="방문 +1"
-          onclick="document.getElementById('btnAddVisit')?.click()">＋</button>
-      </div>
-    </section>
+</section>
 
     <!-- ========================= -->
     <!-- 손님 화면 -->
