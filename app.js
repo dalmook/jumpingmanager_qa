@@ -135,7 +135,7 @@ function tsEndOfDayMonthsAhead(nMonths) {
 // ✅ 권종명에 따른 기본 만료 개월 수
 function defaultExpireMonthsByName(name) {
   if (name === '평일이용권') return 1;      // 1개월
-  if (name === '스탬프적립쿠폰') return 6; // 6개월
+  if (name === '스탬프적립쿠폰') return 1; // 1개월
   // 다회권/10회권/20회권 등 일반권
   return 12;                            // 1년
 }
@@ -226,7 +226,7 @@ function downloadHighResQR(text, filename = 'qr.png', size = 1024){
 /**
  * 권종명에 따라 #passExpire 기본값을 설정
  * - 평일무료권: +1개월
- * - 무료권: +6개월
+ * - 스탬프적립쿠폰: +1개월
  * - 다회권/10회권/20회권(그 외 기본): +1년
  * - 사용자가 날짜를 직접 고치면 더 이상 덮어쓰지 않도록 data-autoset 플래그 사용
  */
@@ -244,7 +244,7 @@ function setExpireDefaultByName(name){
   if (n === '평일이용권') {
     target = addMonths(today, 1);
   } else if (n === '스탬프적립쿠폰') {
-    target = addMonths(today, 6);
+    target = addMonths(today, 1);
   } else if (n === '10회권' || n === '20회권') {
     target = addYears(today, 1);
   } else {
