@@ -80,7 +80,15 @@ function sumNamedValidBatches(passBatches, name){
   });
   return s;
 }
-
+// === NEW: KPI 집계 헬퍼 (10/20만 다회권, 스탬프/평일 분리) ===
+function computeKpisFromBatches(passBatches){
+  const freeStamp   = sumNamedValidBatches(passBatches,'스탬프적립쿠폰');
+  const freeWeekday = sumNamedValidBatches(passBatches,'평일이용권');
+  const pass10      = sumNamedValidBatches(passBatches,'10회권');
+  const pass20      = sumNamedValidBatches(passBatches,'20회권');
+  const general     = pass10 + pass20; // 다회권 잔여는 10/20만
+  return { freeStamp, freeWeekday, pass10, pass20, general };
+}
 
 // ✅ 기존 유틸 유지(레거시용)
 function getPassCount(v){ return typeof v==='number' ? (v||0) : (v?.count||0); }
@@ -1004,11 +1012,12 @@ function renderMember(d){
   if (mCar)   mCar.textContent  = d.car  || '-';
   if (mNote)  mNote.textContent = d.note || '-';
 
-  if(mStamp)     mStamp.textContent = d.stamp || 0;
-  if (mFree)   mFree.textContent   = sumNamedValidBatches(d.passBatches, '무료권');
-  if (mFreeWk) mFreeWk.textContent = sumNamedValidBatches(d.passBatches, '평일무료권');
-  if(mFreeSl)    mFreeSl.textContent = d.freeSlush || 0;
-  if(mPassTotal) mPassTotal.textContent = sumPass(d.passes||{}, d.passBatches||{});
+  if (mStamp)   mStamp.textContent   = d.stamp || 0;
+  const __kpi   = computeKpisFromBatches(d.passBatches || {});
+  if (mFree)    mFree.textContent    = __kpi.freeStamp;     // 스탬프적립쿠폰
+  if (mFreeWk)  mFreeWk.textContent  = __kpi.freeWeekday;   // 평일이용권
+  if (mFreeSl)  mFreeSl.textContent  = d.freeSlush || 0;    // 슬러시
+  if (mPassTotal) mPassTotal.textContent = __kpi.general;   // 다회권(10/20 합)
 
   if(editName) editName.value = d.name || '';
   if(editTeam) editTeam.value = d.team || '';
@@ -1340,9 +1349,9 @@ async function handleScannedText(text){
       if (addFree > 0) {
         const id = newBatchId();
         passBatches[id] = {
-          name: '무료권',
+          name: '스탬프적립쿠폰',
           count: addFree,
-          expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+          expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('스탬프적립쿠폰')),
         };
       }
 
@@ -1429,9 +1438,9 @@ await db.runTransaction(async(tx)=>{
     stamp = 0;
     const id = newBatchId();
     passBatches[id] = {
-      name: '무료권',
+      name: '스탬프적립쿠폰',
       count: 1,
-      expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+      expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('스탬프적립쿠폰')),
     };
   }
 
@@ -1552,9 +1561,9 @@ btnAddStampN?.addEventListener('click', async () => {
         if (addFree > 0) {
           const id = newBatchId();
           passBatches[id] = {
-            name: '무료권',
+            name: '스탬프적립쿠폰',
             count: addFree,
-            expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')),
+            expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('스탬프적립쿠폰')),
           };
         }
       
@@ -1810,11 +1819,11 @@ const freeWkSum = sumNamedValidBatches(d.passBatches, '평일이용권');
 const passTotal = 
   Object.values(d.passBatches || {}).reduce((acc, b) => {
     const name = (b?.name || '');
-    if (name === '무료권' || name === '평일무료권') return acc;
+    if (name === '스탬프적립쿠폰' || name === '평일이용권') return acc;
     return acc + (b?.count || 0);
   }, 0) +
   Object.entries(d.passes || {}).reduce((acc, [k, v]) => {
-    if (k === '무료권' || k === '평일무료권') return acc;
+    if (k === '스탬프적립쿠폰' || k === '평일이용권') return acc;
     return acc + getPassCount(v);
   }, 0);  
 
@@ -1830,7 +1839,7 @@ const passTotal =
         </div>
  <div class="summary-row bottom perks">
    <span class="perk">🎫 다회권 <b>${passTotal}</b></span>
-   <span class="perk">🎁 무료 <b>${freeSum}</b></span>
+   <span class="perk">🎁 스탬프 <b>${freeSum}</b></span>
    <span class="perk">🏖️ 평일 <b>${freeWkSum}</b></span>
    <span class="perk">🧊 슬러시 <b>${d.freeSlush||0}</b></span>
  </div>
