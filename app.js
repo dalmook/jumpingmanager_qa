@@ -28,6 +28,14 @@ if (sessionStorage.getItem('__just_signed_up')) {
   // toast('환영합니다! 초기 설정을 불러왔어요.');
 }
 
+function shortPhone(raw){
+  const p = canonPhone(raw); // 숫자만 추출 (01012345678)
+  if (!p || p.length < 11) return fmtPhone(raw);
+
+  // '010' 제거 후 뒤 8자리 -> 1234-5678 형태
+  const last8 = p.slice(-8);
+  return last8.slice(0,4) + '-' + last8.slice(4);
+}
 
 // 도메인(점 포함 필수)
 const PHONE_DOMAIN = 'phone.local';
@@ -118,8 +126,8 @@ function tsEndOfDayMonthsAhead(nMonths) {
 
 // ✅ 권종명에 따른 기본 만료 개월 수
 function defaultExpireMonthsByName(name) {
-  if (name === '평일무료권') return 1;  // 1개월
-  if (name === '무료권') return 6;      // 6개월
+  if (name === '평일이용권') return 1;      // 1개월
+  if (name === '스탬프적립쿠폰') return 6; // 6개월
   // 다회권/10회권/20회권 등 일반권
   return 12;                            // 1년
 }
@@ -225,11 +233,11 @@ function setExpireDefaultByName(name){
 
   const n = (name || '').replace(/\s+/g, '');
   let target;
-  if (n === '평일무료권') {
+  if (n === '평일이용권') {
     target = addMonths(today, 1);
-  } else if (n === '무료권') {
+  } else if (n === '스탬프적립쿠폰') {
     target = addMonths(today, 6);
-  } else if (n === '다회권' || n === '10회권' || n === '20회권') {
+  } else if (n === '10회권' || n === '20회권') {
     target = addYears(today, 1);
   } else {
     target = addYears(today, 1); // 기본
@@ -388,18 +396,19 @@ const passPresetWk   = document.getElementById('passPresetWk');
 
 passPresetFree?.addEventListener('click', ()=>{
   if(passName&&passCount){
-    passName.value='무료권';
+    passName.value='스탬프적립쿠폰';
     passCount.value='1';
-    setExpireDefaultByName('무료권');
+    setExpireDefaultByName('스탬프적립쿠폰');
   }
 });
 passPresetWk?.addEventListener('click', ()=>{
   if(passName&&passCount){
-    passName.value='평일무료권';
+    passName.value='평일이용권';
     passCount.value='1';
-    setExpireDefaultByName('평일무료권');
+    setExpireDefaultByName('평일이용권');
   }
 });
+
 
 
 
@@ -558,9 +567,9 @@ auth.onAuthStateChanged(async(user)=>{
             if (addFree > 0) {
               const id = newBatchId();
               passBatches[id] = {
-                name: '무료권',
+                name: '스탬프적립쿠폰',
                 count: addFree,
-                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('무료권')), // 기본 만료 반영
+                expireAt: tsEndOfDayMonthsAhead(defaultExpireMonthsByName('스탬프적립쿠폰')),
               };
             }
             
@@ -760,6 +769,13 @@ btnLogout?.addEventListener('click', async()=>{
 btnLoadAll?.addEventListener('click', loadAllMembers);
 btnSearch?.addEventListener('click', searchMembers);
 searchPhone?.addEventListener('keyup', (e)=>{ if(e.key==='Enter') searchMembers(); });
+// ✕(초기화) 버튼: 입력 지우고 전체 목록 로드
+const btnClearSearch = document.getElementById('btnClearSearch');
+btnClearSearch?.addEventListener('click', ()=>{
+  if (searchPhone) searchPhone.value = '';
+  loadAllMembers(true);  // 전체 목록 다시 불러오기
+});
+
 
 // ===== 회원 목록: 단발성 + 페이지네이션 =====
 let __membersCursor = null;
@@ -785,22 +801,19 @@ async function loadAllMembers(reset = true){
   if (reset) {
     adminList.innerHTML = '<div class="muted">불러오는 중…</div>';
     __membersCursor = null;
-  } else {
-    // 추가 로딩 표시(선택)
   }
 
-  try{
-    let q = db.collection('members').orderBy('phone').limit(PAGE_SIZE);
+  try {
+    let q = db.collection('members').orderBy('name').limit(PAGE_SIZE);
     if (__membersCursor) q = q.startAfter(__membersCursor);
 
-    const qs = await q.get();   // ← onSnapshot 사용 안 함(읽기 절약)
+    const qs = await q.get();
     if (reset) adminList.innerHTML = '';
 
     if (qs.empty) {
       if (!adminList.children.length) {
         adminList.innerHTML = '<div class="muted">회원 없음</div>';
       }
-      // 더 이상 로드할 게 없으면 버튼 숨김
       const btn = document.getElementById('btnMoreMembers');
       if (btn) btn.classList.add('hidden');
       return;
@@ -810,12 +823,12 @@ async function loadAllMembers(reset = true){
     qs.forEach(doc=>{
       const d = doc.data() || {};
       const div = document.createElement('div');
-      div.className = 'item';
+      div.className = 'item member-row';
       div.innerHTML = `
         <span class="m-name">${d.name || '-'}</span>
-        <span class="sep"> | </span>
-        <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-        <span class="sep"> | </span>
+        <span class="sep">|</span>
+        <span class="m-phone">${shortPhone(d.phone || '')}</span>
+        <span class="sep">|</span>
         <span class="m-team">${d.team || '-'}</span>
       `;
       div.dataset.id = doc.id;
@@ -825,18 +838,17 @@ async function loadAllMembers(reset = true){
     });
     adminList.appendChild(frag);
 
-    // 다음 페이지 커서 갱신
     __membersCursor = qs.docs[qs.docs.length - 1];
 
-    // "더 보기" 버튼 노출 보장
     const btn = ensureMoreMembersButton();
     if (btn) btn.classList.remove('hidden');
 
-  }catch(e){
-    console.error('loadAllMembers',e);
+  } catch(e) {
+    console.error('loadAllMembers', e);
     adminList.innerHTML = '로드 실패: '+(e?.message||e);
   }
 }
+
 
 
 async function searchMembers(){
@@ -848,40 +860,57 @@ async function searchMembers(){
   adminList.innerHTML = '<div class="muted">검색 중…</div>';
   try{
     let docs = [];
-    if(q.length>=7){
+    if (q.length >= 7) {
+      // 정확 매칭(문서키=전화번호) 우선
       const snap = await db.collection('members').doc(q).get();
-      if(snap.exists) docs=[snap];
-      else{
-        const qs = await db.collection('members').orderBy('phone').startAt(q).endAt(q+'\uf8ff').limit(50).get();
+      if (snap.exists) {
+        docs = [snap];
+      } else {
+        // 전화번호 prefix 검색
+        const qs = await db.collection('members')
+          .orderBy('phone')
+          .startAt(q).endAt(q+'\uf8ff')
+          .limit(50).get();
         docs = qs.docs;
       }
-    }else{
-      const qs = await db.collection('members').orderBy('phone').limit(500).get();
-      docs = qs.docs.filter(d=>(canonPhone(d.data().phone||'')).endsWith(q));
+    } else {
+      // 끝자리 검색: 이름순으로 받아와서 endsWith 필터
+      const qs = await db.collection('members').orderBy('name').limit(500).get();
+      docs = qs.docs.filter(d => (canonPhone(d.data().phone||'')).endsWith(q));
     }
 
-    if(!docs.length){ adminList.innerHTML = '<div class="muted">검색 결과 없음</div>'; return; }
+    if (!docs.length){
+      adminList.innerHTML = '<div class="muted">검색 결과 없음</div>';
+      return;
+    }
+
     const frag = document.createDocumentFragment();
-    docs.forEach(doc=>{
+    docs.forEach(doc => {
       const d = doc.data() || {};
       const div = document.createElement('div');
-      div.className='item';
+      div.className = 'item member-row';
       div.innerHTML = `
-  <span class="m-name">${d.name || '-'}</span>
-  <span class="sep"> | </span>
-  <span class="m-phone">${fmtPhone(d.phone || '')}</span>
-  <span class="sep"> | </span>
-  <span class="m-team">${d.team || '-'}</span>
-`;
-
+        <span class="m-name">${d.name || '-'}</span>
+        <span class="sep">|</span>
+        <span class="m-phone">${shortPhone(d.phone || '')}</span>
+        <span class="sep">|</span>
+        <span class="m-team">${d.team || '-'}</span>
+      `;
       div.dataset.id = doc.id;
-      div.style.cursor='pointer';
+      div.style.cursor = 'pointer';
       div.addEventListener('click', ()=> openMember(doc.id));
       frag.appendChild(div);
     });
-    adminList.innerHTML=''; adminList.appendChild(frag);
-  }catch(e){ console.error('searchMembers',e); adminList.innerHTML='검색 실패: '+e.message; }
+
+    adminList.innerHTML = '';
+    adminList.appendChild(frag);
+
+  } catch(e) {
+    console.error('searchMembers', e);
+    adminList.innerHTML = '검색 실패: ' + (e?.message || e);
+  }
 }
+
 
 
 function renderStageInputs(stages = {}) {
@@ -1774,8 +1803,8 @@ async function loadSelf(user){
       return;
     }
     const d = snap.data() || {};
-const freeSum   = sumNamedValidBatches(d.passBatches, '무료권');
-const freeWkSum = sumNamedValidBatches(d.passBatches, '평일무료권');
+const freeSum   = sumNamedValidBatches(d.passBatches, '스탬프적립쿠폰');
+const freeWkSum = sumNamedValidBatches(d.passBatches, '평일이용권');
 
 // 🎫 다회권 총 잔여(무료권·평일무료권 제외, 배치+레거시 합산)
 const passTotal = 
