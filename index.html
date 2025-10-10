@@ -407,6 +407,7 @@
   // --- A2HS(홈 화면 추가) 핸들 ---
   let deferredPrompt = null;
   const btn = document.getElementById('btnInstallPWA');
+  btn.classList.add('hidden');
 
   // 크롬/안드로이드 계열: beforeinstallprompt 지원
   window.addEventListener('beforeinstallprompt', (e) => {
