@@ -8,6 +8,10 @@
   <title>점핑배틀 화성병점점</title>
 
   <link rel="stylesheet" href="styles.css" />
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/app-192.png" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />  
 
   <!-- Firebase SDK -->
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
@@ -310,6 +314,10 @@
 
         <!-- iOS 스타일 탭바 -->
         <nav class="tabbar">
+          <button type="button" id="btnInstallPWA" class="tab btn highlight small hidden"
+                  style="position:absolute; left:10px; transform:translateY(-44px);">
+            ➕ 홈에 설치
+          </button>          
           <button type="button" class="tab on" data-tab="summary">
             <span class="ico">🏠</span><span class="txt">요약</span>
           </button>
@@ -388,5 +396,54 @@
     </div>
     <textarea id="__dbgArea" readonly></textarea>
   </div>
-</body>
+   </div>
+ </body>
+<script>
+  // --- Service Worker 등록 (오프라인/설치 가능 조건) ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(console.error);
+    });
+  }
+
+  // --- A2HS(홈 화면 추가) 핸들 ---
+  let deferredPrompt = null;
+  const btn = document.getElementById('btnInstallPWA');
+
+  // 크롬/안드로이드 계열: beforeinstallprompt 지원
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (btn) btn.classList.remove('hidden');
+  });
+
+  btn?.addEventListener('click', async () => {
+    // iOS는 JS로 설치 팝업을 띄울 수 없음 → 안내만
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    if (isIOS && isSafari) {
+      alert('iPhone/iPad: 공유(⬆️) > 홈 화면에 추가로 설치하세요.');
+      return;
+    }
+    if (!deferredPrompt) {
+      // 이미 설치됐거나, 브라우저가 지원하지 않는 경우
+      alert('설치가 불가능한 환경이거나 이미 설치됨으로 보입니다.');
+      return;
+    }
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      // 설치 성공 시 버튼 감춤
+      btn.classList.add('hidden');
+    }
+    deferredPrompt = null;
+  });
+
+  // 설치 완료 이벤트(크롬)
+  window.addEventListener('appinstalled', () => {
+    btn?.classList.add('hidden');
+  });
+</script>
+ </html>
+
 </html>
