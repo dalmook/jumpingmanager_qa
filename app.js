@@ -1040,11 +1040,22 @@ function renderMember(d){
     const cnt = b?.count || 0;
     const exp = b?.expireAt ? fmtDate(b.expireAt) : null;
     const line = exp ? `${b.name} · 잔여 ${cnt} · 만료 ${exp}` : `${b.name} · 잔여 ${cnt}`;
+    const isZero = cnt <= 0;
 
     if(passList){
       const item = document.createElement('div');
-      item.className = 'item';
+      item.className = 'item pass-item' + (isZero ? ' zero' : '');
       item.textContent = line + '  [배치]';
+      item.dataset.kind = 'batch';
+      item.dataset.key  = id;
+      // 리스트에서 클릭 시 상단 셀렉트에 반영
+      item.addEventListener('click', ()=>{
+        if (passSelect){
+          passSelect.value = `batch:${id}`;
+          lastSelectedPass = passSelect.value;
+          passSelect.dispatchEvent(new Event('change'));
+        }
+      });      
       passList.appendChild(item);
     }
     if(passSelect){
@@ -1059,11 +1070,21 @@ function renderMember(d){
     const cnt = getPassCount(v);
     const exp = (v && typeof v==='object' && v.expireAt) ? fmtDate(v.expireAt) : null;
     const line = exp ? `${k} · 잔여 ${cnt} · 만료 ${exp}` : `${k} · 잔여 ${cnt}`;
+    const isZero = cnt <= 0;
 
     if(passList){
       const item = document.createElement('div');
-      item.className = 'item';
+      item.className = 'item pass-item' + (isZero ? ' zero' : '');
       item.textContent = line + '  [레거시]';
+      item.dataset.kind = 'legacy';
+      item.dataset.key  = k;
+      item.addEventListener('click', ()=>{
+        if (passSelect){
+          passSelect.value = `legacy:${k}`;
+          lastSelectedPass = passSelect.value;
+          passSelect.dispatchEvent(new Event('change'));
+        }
+      });      
       passList.appendChild(item);
     }
     if(passSelect){
