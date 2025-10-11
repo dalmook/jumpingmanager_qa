@@ -1062,6 +1062,7 @@ function renderMember(d){
       const opt = document.createElement('option');
       opt.value = `batch:${id}`;
       opt.textContent = exp ? `${b.name} (잔 ${cnt}, 만료 ${exp})` : `${b.name} (잔 ${cnt})`;
+      if (isZero) opt.classList.add('zero');
       passSelect.appendChild(opt);
     }
   });
@@ -1091,6 +1092,7 @@ function renderMember(d){
       const opt = document.createElement('option');
       opt.value = `legacy:${k}`;
       opt.textContent = exp ? `${k} (잔 ${cnt}, 만료 ${exp})` : `${k} (잔 ${cnt})`;
+      if (isZero) opt.classList.add('zero');
       passSelect.appendChild(opt);
     }
   });
