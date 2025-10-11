@@ -172,6 +172,11 @@ input:focus,select:focus,textarea:focus{
 .item:hover{transform:translateY(-2px); box-shadow:0 10px 20px rgba(255,122,0,.10)}
 .list.small .item{padding:10px; font-size:14px; line-height:1.4}
 
+/* 보유 다회권: 잔여 0 → 취소선 & 흐림 */
+#passList .item.zero{
+  text-decoration: line-through;
+  opacity: .6;
+}
 /* Member */
 .member-card{display:flex; flex-direction:column; gap:16px}
 .member-card.compact{gap:12px}
