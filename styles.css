@@ -641,3 +641,7 @@ h3.group-title {
   padding-bottom: 4px;
   margin-bottom: 6px;
 }
+#passSelect option.zero {
+  text-decoration: line-through;
+  color: #999;
+}
