@@ -787,7 +787,7 @@ btnClearSearch?.addEventListener('click', ()=>{
 
 // ===== 회원 목록: 단발성 + 페이지네이션 =====
 let __membersCursor = null;
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 // "더 보기" 버튼 보장 유틸 (HTML에 없으면 자동 생성)
 function ensureMoreMembersButton() {
